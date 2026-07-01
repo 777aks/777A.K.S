@@ -45,10 +45,131 @@ fn reboot() -> Result<(), String> {
 }
 
 #[tauri::command]
+fn clean_temp_files() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("cmd")
+            .args(["/C", "del /s /f /q %temp%\\* & del /s /f /q C:\\Windows\\Temp\\*"])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if output.status.success() {
+            Ok("Temporary files cleaned successfully".to_string())
+        } else {
+            Err(String::from_utf8_lossy(&output.stderr).to_string())
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Not implemented for this OS".to_string())
+    }
+}
+
+#[tauri::command]
+fn flush_dns() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("ipconfig")
+            .arg("/flushdns")
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if output.status.success() {
+            Ok("DNS Cache flushed successfully".to_string())
+        } else {
+            Err(String::from_utf8_lossy(&output.stderr).to_string())
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Not implemented for this OS".to_string())
+    }
+}
+
+#[tauri::command]
+fn ping_host(host: String) -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("ping")
+            .args([&host, "-n", "4"])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if output.status.success() {
+            Ok(String::from_utf8_lossy(&output.stdout).to_string())
+        } else {
+            Err(String::from_utf8_lossy(&output.stderr).to_string())
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Ping not implemented for this OS in GUI".to_string())
+    }
+}
+
+#[tauri::command]
+fn run_sfc() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("sfc")
+            .arg("/scannow")
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if output.status.success() {
+            Ok("SFC Scan completed successfully".to_string())
+        } else {
+            Err(String::from_utf8_lossy(&output.stderr).to_string())
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Not implemented for this OS".to_string())
+    }
+}
+
+#[tauri::command]
+fn run_dism() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("DISM")
+            .args(["/Online", "/Cleanup-Image", "/RestoreHealth"])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if output.status.success() {
+            Ok("DISM Repair completed successfully".to_string())
+        } else {
+            Err(String::from_utf8_lossy(&output.stderr).to_string())
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Not implemented for this OS".to_string())
+    }
+}
+
+#[tauri::command]
 fn get_hardware_info() -> String {
-    // This is a placeholder for actual hardware info retrieval
-    // In a real app, you might use the `sysinfo` crate
+    // Simplified hardware info for now
     format!("Hardware info retrieved from Rust")
+}
+
+#[tauri::command]
+fn get_extended_hardware_info() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("cmd")
+            .args(["/C", "wmic cpu get name & wmic os get caption & wmic memorychip get capacity"])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok("Hardware info not available for this OS".to_string())
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -65,7 +186,13 @@ pub fn run() {
             greet,
             shutdown,
             reboot,
-            get_hardware_info
+            clean_temp_files,
+            flush_dns,
+            ping_host,
+            run_sfc,
+            run_dism,
+            get_hardware_info,
+            get_extended_hardware_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
