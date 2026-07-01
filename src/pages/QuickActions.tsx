@@ -5,13 +5,15 @@ import {
   ArrowUpRight,
   ShieldAlert,
   Moon,
-  Monitor
+  Monitor,
+  Wifi
 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 
 const actions = [
   { id: 'shutdown', label: 'Shutdown', icon: Power, color: 'bg-aks-red', desc: 'Power off the system immediately' },
   { id: 'reboot', label: 'Restart', icon: RefreshCcw, color: 'bg-aks-orange', desc: 'Reboot the system' },
+  { id: 'flush_dns', label: 'Flush DNS', icon: Wifi, color: 'bg-aks-green', desc: 'Clear the DNS resolver cache' },
   { id: 'uefi', label: 'BIOS/UEFI', icon: ArrowUpRight, color: 'bg-aks-blue', desc: 'Restart into UEFI settings' },
   { id: 'recovery', label: 'Recovery', icon: ShieldAlert, color: 'bg-aks-yellow', desc: 'Restart into recovery mode' },
   { id: 'sleep', label: 'Sleep', icon: Moon, color: 'bg-gray-600', desc: 'Put system into sleep mode' },
@@ -22,13 +24,17 @@ export const QuickActions: React.FC = () => {
   const handleAction = async (id: string) => {
     try {
       console.log(`Executing action: ${id}`);
-      if (id === 'shutdown' || id === 'reboot') {
-        await invoke(id);
+      if (['shutdown', 'reboot', 'flush_dns'].includes(id)) {
+        const res = await invoke(id);
+        if (id === 'flush_dns') {
+          alert(res);
+        }
       } else {
         alert(`Action "${id}" is not yet implemented in the Rust backend.`);
       }
     } catch (err) {
       console.error('Failed to execute action:', err);
+      alert(`Error: ${err}`);
     }
   };
 
