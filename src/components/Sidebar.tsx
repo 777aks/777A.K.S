@@ -10,12 +10,14 @@ import {
   Users,
   ShieldCheck,
   Terminal,
+  Globe,
   Phone,
   Facebook,
   Youtube
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import logo from '../assets/logo.png';
+import aksOneLogo from '../assets/aks_one_logo.png';
 import { TikTokIcon } from './TikTokIcon';
 
 const navItems = [
@@ -27,6 +29,7 @@ const navItems = [
   { icon: Terminal, label: 'Consoles', path: '/consoles' },
   { icon: ShieldCheck, label: 'Diagnostics', path: '/diagnostics' },
   { icon: Users, label: 'Clients', path: '/clients' },
+  { icon: Globe, label: 'AKS ONE CI', path: '/aks-one', logo: aksOneLogo },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
@@ -55,10 +58,14 @@ export const Sidebar: React.FC = () => {
                 : "text-blue-100 hover:bg-aks-blue-light hover:text-white"
             )}
           >
-            <item.icon className={cn(
-              "mr-3 h-5 w-5",
-              "group-hover:scale-110 transition-transform duration-150"
-            )} />
+            {item.logo ? (
+              <img src={item.logo} alt="" className="mr-3 h-5 w-5 object-contain group-hover:scale-110 transition-transform duration-150" />
+            ) : (
+              <item.icon className={cn(
+                "mr-3 h-5 w-5",
+                "group-hover:scale-110 transition-transform duration-150"
+              )} />
+            )}
             {item.label}
           </NavLink>
         ))}
