@@ -17,6 +17,8 @@ export default {
         'aks-orange': '#fd7e14',
         'aks-red': '#dc3545',
         'aks-green': '#28a745',
+        'ci-orange': '#FF8200',
+        'ci-green': '#009E60',
       }
     },
   },
